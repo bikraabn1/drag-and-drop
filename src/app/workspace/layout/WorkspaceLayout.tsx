@@ -47,7 +47,7 @@ const DragAndDropFlow = () => {
     const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
     const { screenToFlowPosition } = useReactFlow();
-    const [ type, setType ] = useDnD();
+    const [type, setType] = useDnD();
 
     const onConnect = useCallback((params: Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
 
@@ -97,9 +97,9 @@ const DragAndDropFlow = () => {
                 >
                     <Controls />
                     <Background />
-                    <Sidebar />
                 </ReactFlow>
             </div>
+            <Sidebar />
         </div>
     );
 };
