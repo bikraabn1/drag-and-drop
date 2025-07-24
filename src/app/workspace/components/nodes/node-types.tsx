@@ -1,6 +1,5 @@
-'use client'
-import CustomNode from "./CustomNode";
+import ExcelInputNode from "./ExcelInputNode";
 
 export const NodeTypes = {
-    customNode : CustomNode
+    customNode : ExcelInputNode,
 }

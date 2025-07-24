@@ -10,13 +10,12 @@ import {
     type Node,
     type Edge,
     Connection,
+    useOnSelectionChange,
 } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
-
-import Sidebar from '../components/Sidebar';
 import { DnDProvider, useDnD } from '../../context/DnDContext';
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import WorkspaceBlocks from '../components/WorkspaceBlocks';
 import { NodeTypes } from '../components/nodes/node-types';
 
@@ -36,6 +35,8 @@ const DragAndDropFlow = () => {
     const reactFlowWrapper = useRef(null);
     const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNode);
     const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+    const [selectedNodes, setSelectedNodes] = useState<string[] | null>(null)
+    const [selectedEdges, setSelectedEdges] = useState<string[] | null>(null)
     const { screenToFlowPosition } = useReactFlow();
     const [type, setType] = useDnD();
 
@@ -45,6 +46,20 @@ const DragAndDropFlow = () => {
         event.preventDefault();
         event.dataTransfer.dropEffect = 'move';
     }, []);
+
+    interface onChangeCallback { 
+        nodes : Node[], 
+        edges : Edge[]
+    }
+
+    useOnSelectionChange({
+        onChange : ({ nodes, edges  } : onChangeCallback) => {
+            setSelectedNodes(nodes.map((node : Node) => node.id))
+            setSelectedEdges(edges.map((edge : Edge) => edge.id))
+        }
+    })
+
+    console.log(selectedNodes?.join(', '))
 
     const onDrop = useCallback(
         (event: React.DragEvent<HTMLDivElement>) => {
@@ -82,11 +97,19 @@ const DragAndDropFlow = () => {
         setNodes((nodes) => nodes.concat(newNode))        
     }
 
+    const nodeWithProps = nodes.map(node => ({
+        ...node,
+        data : {
+            ...node.data,
+            isSelected: selectedNodes?.includes(node.id)
+        }
+    }))
+    
     return (
         <div className='dndflow' style={{ width: '100%', height: '100%', position: 'relative' }}>
             <div className="reactflow-wrapper" ref={reactFlowWrapper} style={{ width: '100%', height: '100%', }}>
                 <ReactFlow
-                    nodes={nodes}
+                    nodes={nodeWithProps}
                     edges={edges}
                     onNodesChange={onNodesChange}
                     onEdgesChange={onEdgesChange}
@@ -94,14 +117,12 @@ const DragAndDropFlow = () => {
                     onDrop={onDrop}
                     nodeTypes={NodeTypes}
                     onDragOver={onDragOver}
-                    fitView
                 >
                     <Controls />
                     <Background />
                     <WorkspaceBlocks addNode={addNode}/>
                 </ReactFlow>
             </div>
-            {/* <Sidebar /> */}
         </div>
     );
 };
