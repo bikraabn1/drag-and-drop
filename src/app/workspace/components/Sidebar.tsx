@@ -1,3 +1,4 @@
+'use client'
 import { useDnD } from '@/app/context/DnDContext';
 import React from 'react'
 
@@ -8,9 +9,9 @@ const Sidebar = () => {
         setType(nodeType);
         event.dataTransfer.effectAllowed = 'move';
     };
+
     return (
-        <aside className='z-[9999]'>
-            <div className="description">You can drag these nodes to the pane on the right.</div>
+        <aside className='z-[9999] relative'>
             <div className="dndnode input" onDragStart={(event) => onDragStart(event, 'input')} draggable>
                 Input Node
             </div>
@@ -21,7 +22,6 @@ const Sidebar = () => {
                 Output Node
             </div>
         </aside>
-
     )
 }
 
