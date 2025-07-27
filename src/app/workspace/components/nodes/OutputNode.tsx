@@ -1,17 +1,14 @@
 'use client'
-import React, { useState } from 'react'
-import { SettingOutlined, TableOutlined, UploadOutlined } from '@ant-design/icons'
+
+import { DownloadOutlined, FileExcelFilled, SettingOutlined, TableOutlined, UploadOutlined } from '@ant-design/icons'
 import { Handle, NodeProps, Position } from '@xyflow/react'
-import { Button, Card, Divider, Drawer, Flex, Upload, UploadProps } from 'antd'
+import { Button, Card, Divider, Drawer, Flex, Upload } from 'antd'
 import Paragraph from 'antd/es/typography/Paragraph'
-import * as XLSX from 'xlsx'
-import { cardStyle, drawerButtonStyle, sourceHandleStyle } from './node-styles/node-style'
+import React, { useState } from 'react'
+import { cardStyle, drawerButtonStyle, targetHandleStyle } from './node-styles/node-style'
 
-const ExcelInputNode = ({ data, id }: NodeProps) => {
-
+const OutputNode = ({ data }: NodeProps) => {
     const [open, setOpen] = useState(false);
-    const [parsedData, setParsedData] = useState<any[]>([])
-    const [fileName, setFileName] = useState<string>('')
 
     const showDrawer = () => {
         setOpen(true);
@@ -20,12 +17,12 @@ const ExcelInputNode = ({ data, id }: NodeProps) => {
     const onClose = () => {
         setOpen(false);
     };
-
+    
     return (
         <div>
-            <Card style={{ ...cardStyle, border: data.isSelected ? 'solid #7472B5 2px' : '' }}>
+            <Card style={cardStyle}>
                 <div style={{ padding: '4px', display: 'flex', justifyContent: 'start', alignItems: 'start' }}>
-                    <Paragraph style={{ fontSize: '14px', marginInline: '4px' }}>File Input</Paragraph>
+                    <Paragraph style={{ fontSize: '14px', marginInline: '4px' }}>Output</Paragraph>
                 </div>
                 <Divider style={{ margin: '0', background: data.isSelected ? '#7472B5' : '' }} />
                 <div
@@ -35,12 +32,12 @@ const ExcelInputNode = ({ data, id }: NodeProps) => {
                         padding: 0,
                         position: 'relative',
                         display: 'flex',
-                        justifyContent: 'flex-end',
+                        justifyContent: 'flex-start',
                         alignItems: 'center',
                         flexGrow: 1
                     }}>
-                    <TableOutlined style={{ marginInline: 2, display: data.isSelected ? 'block' : 'none', paddingBlock: '4px' }} />
-                    <Handle type='source' style={{ ...sourceHandleStyle, position: 'absolute', right: data.isSelected ? -5 : -3, top: data.isSelected ? 15 : 10 }} position={Position.Right} />
+                    <FileExcelFilled style={{ marginInline: 2, display: data.isSelected ? 'block' : 'none', paddingBlock: '4px' }} />
+                    <Handle type='target' style={{ ...targetHandleStyle, position: 'absolute', left: data.isSelected ? -6 : -4, top: data.isSelected ? 15 : 10 }} position={Position.Left} />
                 </div>
                 <Divider style={{ margin: 0, background: data.isSelected ? '#7472B5' : '' }} />
                 <Flex align='center' justify='center'>
@@ -52,14 +49,14 @@ const ExcelInputNode = ({ data, id }: NodeProps) => {
                         onClose={onClose}
                         open={open}
                     >
-                        <Upload>
-                            <Button icon={<UploadOutlined />}>Upload</Button>
+                        <Upload accept='xls, xlsx, csv'>
+                            <Button icon={<DownloadOutlined />}>Download</Button>
                         </Upload>
                     </Drawer>
                 </Flex>
             </Card >
-        </div >
+        </div>
     )
 }
 
-export default ExcelInputNode
+export default OutputNode

@@ -1,7 +1,6 @@
 import React from 'react'
 import { ReactFlowProvider } from '@xyflow/react'
 import WorkspaceLayout from './layout/WorkspaceLayout'
-import { DnDProvider } from '../context/DnDContext'
 import { ConfigProvider } from 'antd'
 
 const Workspace = () => {
@@ -10,17 +9,15 @@ const Workspace = () => {
             <ConfigProvider
                 theme={{
                     components: {
-                        Card : {
-                            bodyPadding: 0
+                        Card: {
+                            bodyPadding: 0,
                         },
-                    }
+                    },
                 }}
             >
-                <DnDProvider>
-                    <ReactFlowProvider>
-                        <WorkspaceLayout />
-                    </ReactFlowProvider>
-                </DnDProvider>
+                <ReactFlowProvider>
+                    <WorkspaceLayout />
+                </ReactFlowProvider>
             </ConfigProvider>
         </div>
     )

@@ -5,7 +5,6 @@ import {
     useNodesState,
     useEdgesState,
     Controls,
-    useReactFlow,
     Background,
     type Node,
     type Edge,
@@ -14,7 +13,6 @@ import {
 } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
-import { DnDProvider, useDnD } from '../../context/DnDContext';
 import { useCallback, useRef, useState } from 'react';
 import WorkspaceBlocks from '../components/WorkspaceBlocks';
 import { NodeTypes } from '../components/nodes/node-types';
@@ -22,70 +20,24 @@ import { NodeTypes } from '../components/nodes/node-types';
 let id = 0;
 const getId = () => `dndnode_${id++}`;
 
-const initialNode : Node[] = [
-    {
-        id: getId(),
-        type: 'customNode',
-        data: { label: 'Node 1' },
-        position: {x: 100, y: 200},
-    }
-]
-
 const DragAndDropFlow = () => {
     const reactFlowWrapper = useRef(null);
-    const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNode);
+    const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
     const [selectedNodes, setSelectedNodes] = useState<string[] | null>(null)
-    const [selectedEdges, setSelectedEdges] = useState<string[] | null>(null)
-    const { screenToFlowPosition } = useReactFlow();
-    const [type, setType] = useDnD();
+    const [nodeData, setNodeData] = useState<Record<string, any>>({})
+    const [_, setSelectedEdges] = useState<string[] | null>(null)
 
     const onConnect = useCallback((params: Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
 
-    const onDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-        event.preventDefault();
-        event.dataTransfer.dropEffect = 'move';
-    }, []);
-
-    interface onChangeCallback { 
-        nodes : Node[], 
-        edges : Edge[]
+    const updateNodeData = (nodeId: string, newData: {}) => {
+        setNodeData(prev => ({ ...prev, [nodeId]: newData }))
     }
 
-    useOnSelectionChange({
-        onChange : ({ nodes, edges  } : onChangeCallback) => {
-            setSelectedNodes(nodes.map((node : Node) => node.id))
-            setSelectedEdges(edges.map((edge : Edge) => edge.id))
-        }
-    })
-
-    console.log(selectedNodes?.join(', '))
-
-    const onDrop = useCallback(
-        (event: React.DragEvent<HTMLDivElement>) => {
-            event.preventDefault();
-
-            if (!type) {
-                return;
-            }
-
-            const position = screenToFlowPosition({
-                x: event.clientX,
-                y: event.clientY,
-            });
-
-            const newNode: Node = {
-                id: getId(),
-                type: type,
-                position,
-                data: { label: `${type} node` },
-            };
-
-            setNodes((nds) => nds.concat(newNode));
-            setType(null);
-        },
-        [screenToFlowPosition, type, setNodes, setType],
-    );
+    interface onChangeCallback {
+        nodes: Node[],
+        edges: Edge[]
+    }
 
     const addNode = (nodeType: string, label: string) => {
         const newNode = {
@@ -94,17 +46,35 @@ const DragAndDropFlow = () => {
             position: { x: 100 + nodes.length * 5, y: 100 + nodes.length * 5 },
             data: { label },
         }
-        setNodes((nodes) => nodes.concat(newNode))        
+        setNodes((nodes) => nodes.concat(newNode))
     }
 
-    const nodeWithProps = nodes.map(node => ({
-        ...node,
-        data : {
+    const nodeWithProps = nodes.map(node => {
+        const baseData = {
             ...node.data,
-            isSelected: selectedNodes?.includes(node.id)
-        }
-    }))
+            isSelected: selectedNodes?.includes(node.id),
+            onDataChange: updateNodeData,
+            nodeData: nodeData[node.id] || {}
+        };
+
+        if (node.type === 'inputNode') {
+            return {
+                ...node,
+                data: baseData
+            }
+        } 
+        
+        return node
+        
+    })
     
+    useOnSelectionChange({
+        onChange: ({ nodes, edges }: onChangeCallback) => {
+            setSelectedNodes(nodes.map((node: Node) => node.id))
+            setSelectedEdges(edges.map((edge: Edge) => edge.id))
+        }
+    })
+
     return (
         <div className='dndflow' style={{ width: '100%', height: '100%', position: 'relative' }}>
             <div className="reactflow-wrapper" ref={reactFlowWrapper} style={{ width: '100%', height: '100%', }}>
@@ -114,14 +84,27 @@ const DragAndDropFlow = () => {
                     onNodesChange={onNodesChange}
                     onEdgesChange={onEdgesChange}
                     onConnect={onConnect}
-                    onDrop={onDrop}
                     nodeTypes={NodeTypes}
-                    onDragOver={onDragOver}
                 >
                     <Controls />
                     <Background />
-                    <WorkspaceBlocks addNode={addNode}/>
+                    <WorkspaceBlocks addNode={addNode} />
                 </ReactFlow>
+            </div>
+            <div style={{
+                position: 'absolute',
+                top: 10,
+                right: 10,
+                background: 'rgba(255,255,255,0.9)',
+                padding: 10,
+                borderRadius: 5,
+                maxWidth: 300,
+                fontSize: '12px',
+                maxHeight: 200,
+                overflow: 'auto'
+            }}>
+                <strong>Debug - Node Data:</strong>
+                <pre>{JSON.stringify(nodeData, null, 2)}</pre>
             </div>
         </div>
     );
@@ -129,9 +112,7 @@ const DragAndDropFlow = () => {
 
 const WorkspaceLayout = () => {
     return (
-        <DnDProvider>
-            <DragAndDropFlow />
-        </DnDProvider>
+        <DragAndDropFlow />
     );
 };
 

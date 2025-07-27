@@ -6,6 +6,12 @@ interface WorkspaceBlocksProps {
     addNode: (nodeType: string, label: string) => void
 }
 
+type nodeButton = {
+    nodeLabel: string,
+    buttonText: string,
+    type: string
+}
+
 const blocksFlexStyle : React.CSSProperties = {
     width: '100%',
     height: 120,
@@ -21,6 +27,24 @@ const containerStyle: React.CSSProperties = {
     pointerEvents: 'none'
 };
 
+const NodeButtons : nodeButton[] = [
+    {
+        nodeLabel: 'Excel Input Node',
+        buttonText: 'input node',
+        type: 'inputNode',
+    },
+    {
+        nodeLabel: 'Process Node',
+        buttonText: 'process node',
+        type: 'processNode',
+    },
+    {
+        nodeLabel: 'Output Node',
+        buttonText: 'output node',
+        type: 'outputNode',
+    },
+]
+
 const WorkspaceBlocks = ({ addNode }: WorkspaceBlocksProps) => {
     const [open, setOpen] = useState(false);
 
@@ -31,7 +55,6 @@ const WorkspaceBlocks = ({ addNode }: WorkspaceBlocksProps) => {
     const onClose = () => {
         setOpen(false);
     };
-
 
     return (
         <div style={containerStyle}>
@@ -48,10 +71,9 @@ const WorkspaceBlocks = ({ addNode }: WorkspaceBlocksProps) => {
                 style={{ zIndex: open ? 20 : -1, pointerEvents: open ? 'auto' : 'none', top: 0, bottom: 0, right: 0 }}
             >
                 <Flex vertical gap='small' style={blocksFlexStyle}>
-                    <Button style={{ pointerEvents: 'auto' }} onClick={() => addNode('input', 'Input Node')}>Node Input</Button>
-                    <Button style={{ pointerEvents: 'auto' }} onClick={() => addNode('default', 'Default Node')}>Node Default</Button>
-                    <Button style={{ pointerEvents: 'auto' }} onClick={() => addNode('output', 'Output Node')}>Node Output</Button>
-                    <Button style={{ pointerEvents: 'auto' }} onClick={() => addNode('customNode', 'Output Node')}>Node Custom</Button>
+                    {NodeButtons.map((nodeButton, index) => (
+                        <Button key={index} style={{ pointerEvents: 'auto' }} onClick={() => addNode(nodeButton.type, nodeButton.nodeLabel)}>{nodeButton.buttonText}</Button>
+                    ))}
                 </Flex>
             </Drawer>
         </div>
