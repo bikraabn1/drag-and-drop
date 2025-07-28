@@ -1,91 +1,46 @@
 'use client'
 
-import React, { useState } from 'react'
-import { FileTextFilled, PlayCircleFilled, ScheduleFilled, SettingOutlined, TableOutlined, UploadOutlined } from '@ant-design/icons'
-import { Handle, NodeProps, Position } from '@xyflow/react'
-import { Button, Card, Divider, Drawer, Flex, Select, Upload } from 'antd'
+import React, { useEffect, useMemo, useState } from 'react'
+import { SlidersOutlined } from '@ant-design/icons'
+import { Handle, NodeProps, Position, useEdges, useNodesData } from '@xyflow/react'
+import { Card, Divider, Flex, Select } from 'antd'
 import Paragraph from 'antd/es/typography/Paragraph'
-import { cardStyle, drawerButtonStyle, sourceHandleStyle, targetHandleStyle } from './node-styles/node-style'
+import { cardStyle, headerNodeStyle, headerTitleNodeStyle, sourceHandleStyle, targetHandleStyle, headerIconNodeStyle, bodyNodeStyle, bodyTitleNodeStyle } from './node-styles/node-style'
 
-const ProcessNode = ({ data }: NodeProps) => {
+const ProcessNode = ({ id }: NodeProps) => {
+    const allEdges = useEdges()
+    const sourceNodeIds = useMemo(() => {
+        const ids = allEdges
+            .filter((edges) => edges.target === id)
+            .map((edge) => edge.source)
+
+        return ids
+    }, [id, allEdges])
+
+    const sourceNodeData = useNodesData(sourceNodeIds)
+
     
-    const [open, setOpen] = useState<string | null>(null);
 
-    const showDrawer = (drawerIdentifier : string) => {
-        setOpen(drawerIdentifier);
-    };
-
-    const onClose = () => {
-        setOpen(null);
-    };
 
     return (
         <div>
-            <Card style={{...cardStyle, border : data.isSelected ? 'solid #7472B5 2px' : ''  }}>
-                <div style={{ padding: '4px', display: 'flex', justifyContent: 'start', alignItems: 'start' }}>
-                    <Paragraph style={{ fontSize: '14px', marginInline: '4px' }}>Process</Paragraph>
-                </div>
-                <Divider style={{ margin: '0', background: data.isSelected ? '#7472B5' : '' }} />
-                <div
-                    style={{
-                        minHeight: '1rem',
-                        backgroundColor: '#F0F0F0',
-                        padding: 0,
-                        position: 'relative',
-                        display: 'flex',
-                        justifyContent: 'flex-start',
-                        alignItems: 'center',
-                        flexGrow: 1
-                    }}>
-                    <TableOutlined style={{ marginInline: 2, display: data.isSelected ? 'block' : 'none', paddingBlock: '4px' }} />
-                    <Handle type='target' style={{ ...targetHandleStyle, position: 'absolute', left: data.isSelected ? -6 : -4, top: data.isSelected ? 15 : 10 }} position={Position.Left} />
-                </div>
-                <Divider style={{ margin: 0, background: data.isSelected ? '#7472B5' : '' }} />
-                <div
-                    style={{
-                        minHeight: '1rem',
-                        backgroundColor: '#F0F0F0',
-                        padding: 0,
-                        position: 'relative',
-                        display: 'flex',
-                        justifyContent: 'flex-end',
-                        alignItems: 'center',
-                        flexGrow: 1
-                    }}>
-                    <ScheduleFilled style={{ marginInline: 2, display: data.isSelected ? 'block' : 'none', paddingBlock: '4px' }} />
-                    <Handle type='source' style={{ ...sourceHandleStyle, position: 'absolute', right: data.isSelected ? -5 : -3, top: data.isSelected ? 15 : 10 }} position={Position.Right} />
-                </div>
-                <Divider style={{ margin: 0, background: data.isSelected ? '#7472B5' : '' }} />
-                <Flex align='center' justify='center' gap={5}>
-                    <Button style={drawerButtonStyle} onClick={() => showDrawer('settings')}>
-                        <SettingOutlined />
-                    </Button>
-                    <Drawer
-                        closable={{ 'aria-label': 'Close Button' }}
-                        onClose={onClose}
-                        open={open === 'settings'}
-                    >
-                        <h3>Set Process</h3>
-                        <Select style={{width: '100%', marginTop: 10}}>
-                            <Select.Option>Filter</Select.Option>
-                            <Select.Option>Sort By</Select.Option>
-                        </Select>
-                    </Drawer>
-                    <Button style={drawerButtonStyle} onClick={() => showDrawer('preview')}>
-                        <FileTextFilled />
-                    </Button>
-                    <Drawer
-                        closable={{ 'aria-label': 'Close Button' }}
-                        onClose={onClose}
-                        open={open === 'preview'}
-                    >
-                        <Upload accept='xls, xlsx, csv'>
-                            <Flex gap={5}>
-                                <Button icon={<UploadOutlined />}>Upload</Button>
-                            </Flex>
-                        </Upload>
-                    </Drawer>
+            <Card style={cardStyle}>
+                <Flex justify='start' align='center' gap={5} style={headerNodeStyle}>
+                    <SlidersOutlined style={{ ...headerIconNodeStyle, background: '#CC1B42' }} />
+                    <Paragraph style={headerTitleNodeStyle}>Process</Paragraph>
                 </Flex>
+
+                <Divider style={{ margin: '0' }} />
+
+                <Flex align='flex-start' style={bodyNodeStyle} vertical gap={5}>
+                    <h3 style={bodyTitleNodeStyle}>Set Process</h3>
+                    <Select style={{ width: '100%', marginTop: 10 }}>
+                        <Select.Option key="filter">Filter</Select.Option>
+                        <Select.Option key="sort-by">Sort By</Select.Option>
+                    </Select>
+                </Flex>
+                <Handle type='target' style={targetHandleStyle} position={Position.Left} />
+                <Handle type='source' style={sourceHandleStyle} position={Position.Right} />
             </Card >
         </div>
     )

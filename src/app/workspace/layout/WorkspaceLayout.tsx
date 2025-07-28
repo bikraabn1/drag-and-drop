@@ -21,18 +21,34 @@ let id = 0;
 const getId = () => `dndnode_${id++}`;
 
 const DragAndDropFlow = () => {
+    const initialNodes : Node[] = [
+        {
+            id : '1',
+            position: {x: 200, y: 200},
+            data: { label: 'Node 1' },
+            type: 'inputNode'
+        },
+        {
+            id : '2',
+            position: {x: 550, y: 200},
+            data: { label: 'Node 2' },
+            type: 'processNode'
+        },
+        {
+            id : '3',
+            position: {x: 800, y: 200},
+            data: { label: 'Node 3' },
+            type: 'outputNode'
+        },
+    ]
+
     const reactFlowWrapper = useRef(null);
-    const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+    const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
     const [selectedNodes, setSelectedNodes] = useState<string[] | null>(null)
-    const [nodeData, setNodeData] = useState<Record<string, any>>({})
     const [_, setSelectedEdges] = useState<string[] | null>(null)
 
     const onConnect = useCallback((params: Connection) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
-
-    const updateNodeData = (nodeId: string, newData: {}) => {
-        setNodeData(prev => ({ ...prev, [nodeId]: newData }))
-    }
 
     interface onChangeCallback {
         nodes: Node[],
@@ -53,8 +69,6 @@ const DragAndDropFlow = () => {
         const baseData = {
             ...node.data,
             isSelected: selectedNodes?.includes(node.id),
-            onDataChange: updateNodeData,
-            nodeData: nodeData[node.id] || {}
         };
 
         if (node.type === 'inputNode') {
@@ -85,26 +99,12 @@ const DragAndDropFlow = () => {
                     onEdgesChange={onEdgesChange}
                     onConnect={onConnect}
                     nodeTypes={NodeTypes}
+                    fitView
                 >
                     <Controls />
                     <Background />
                     <WorkspaceBlocks addNode={addNode} />
                 </ReactFlow>
-            </div>
-            <div style={{
-                position: 'absolute',
-                top: 10,
-                right: 10,
-                background: 'rgba(255,255,255,0.9)',
-                padding: 10,
-                borderRadius: 5,
-                maxWidth: 300,
-                fontSize: '12px',
-                maxHeight: 200,
-                overflow: 'auto'
-            }}>
-                <strong>Debug - Node Data:</strong>
-                <pre>{JSON.stringify(nodeData, null, 2)}</pre>
             </div>
         </div>
     );
