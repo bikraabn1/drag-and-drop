@@ -30,7 +30,7 @@ const DragAndDropFlow = () => {
         },
         {
             id : '2',
-            position: {x: 550, y: 200},
+            position: {x: 500, y: 200},
             data: { label: 'Node 2' },
             type: 'processNode'
         },

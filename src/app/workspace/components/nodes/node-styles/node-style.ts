@@ -58,10 +58,14 @@ export const headerIconNodeStyle: React.CSSProperties = {
 
 export const bodyNodeStyle : React.CSSProperties = {
     padding: 10,
-    minHeight: '80px'
+    minHeight: '80px',
 }
 
 export const bodyTitleNodeStyle : React.CSSProperties = {
-    marginBottom: 20,
+    marginBottom: 3,
     fontWeight: '500'
+}
+
+export const bodyLabelSelector : React.CSSProperties = {
+
 }
