@@ -1,9 +1,9 @@
 'use client'
 
-import React, { ChangeEvent, useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { SlidersOutlined } from '@ant-design/icons'
 import { Handle, Node, NodeProps, Position, useEdges, useNodesData, useReactFlow } from '@xyflow/react'
-import { Card, Checkbox, Divider, Flex, Radio, Select } from 'antd'
+import { Card, Checkbox, Divider, Flex, Select } from 'antd'
 import Paragraph from 'antd/es/typography/Paragraph'
 import { cardStyle, headerNodeStyle, headerTitleNodeStyle, sourceHandleStyle, targetHandleStyle, headerIconNodeStyle, bodyNodeStyle, bodyTitleNodeStyle, bodyLabelSelector } from './node-styles/node-style'
 
@@ -13,7 +13,11 @@ export type ExcelInputNodeData = {
 }
 
 const ProcessNode = ({ id }: NodeProps) => {
+    const { updateNodeData } = useReactFlow()
     const [isOpen, setIsOpen] = useState<string>('')
+    const [filter, setFilter] = useState<string[]>([])
+    const [excelData, setExcelData] = useState<any>([])
+    const [filteredData, setFilteredData] = useState<any>([])
 
     const handleChangeProcessMethod = (value: string) => {
         setIsOpen(value)
@@ -31,19 +35,36 @@ const ProcessNode = ({ id }: NodeProps) => {
     const sourceNodeData = useNodesData(sourceNodeIds) as Node<ExcelInputNodeData>[]
 
     const columnHeader = useMemo(() => {
-        if (sourceNodeData && sourceNodeData.length > 0) {
-            const firstDataOnConnectedNode = sourceNodeData[0]
-            if (firstDataOnConnectedNode && firstDataOnConnectedNode.data) {
-                const headersData = firstDataOnConnectedNode.data.data?.[0]
-                const headers = headersData ? Object.keys(headersData) : []
-
-                return headers?.map(header => ({
-                    label: header,
-                    value: header
-                }))
-            }
+        if (sourceNodeData?.[0]?.data?.data?.[0]) {
+            const headers = Object.keys(sourceNodeData[0].data.data[0])
+            return headers.map(header => ({
+                label: header,
+                value: header
+            }))
         }
-    }, [sourceNodeData, sourceNodeIds])
+        return []
+    }, [sourceNodeData])
+
+    useEffect(() => {
+        if (sourceNodeData?.[0]?.data?.data) {
+            setExcelData(sourceNodeData[0].data.data)
+        }
+    }, [sourceNodeData, filter, id, updateNodeData])
+
+    useEffect(() => {
+        if(excelData.length > 0 && filter.length > 0){
+            const newData = excelData.map((row : any) => {
+                return filter.reduce((newObj : any, key) => {
+                    if(row && row.hasOwnProperty(key)){
+                        newObj[key] = row[key]
+                    }
+                    return newObj
+                }, {})
+            })
+            setFilteredData(newData)
+            updateNodeData(id, filteredData)
+        }
+    },[filter])
 
     return (
         <div>
@@ -77,12 +98,12 @@ const ProcessNode = ({ id }: NodeProps) => {
                                 />
                             </div>
                         ) : columnHeader && columnHeader.length > 0
-                            ? ( 
+                            ? (
                                 <div style={{ width: "100%" }}>
                                     <h3 style={bodyTitleNodeStyle}>Filter</h3>
                                     <Checkbox.Group
                                         options={columnHeader}
-                                        onChange={(value) => console.log(value)}
+                                        onChange={(value) => setFilter(value)}
                                         style={{ display: 'flex', flexDirection: 'column', marginTop: 5 }}
                                     />
 

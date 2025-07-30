@@ -16,10 +16,7 @@ type ExcelInputNodeData = {
 type ExcelInputNodeProps = Node<ExcelInputNodeData>
 
 const ExcelInputNode = ({ id, data }: NodeProps<ExcelInputNodeProps>) => {
-    const { updateNodeData, deleteElements } = useReactFlow()
-
-    const currentFilename = data?.fileName || 'no content uploaded'
-    const isFileUploaded = !!data?.fileName
+    const { updateNodeData } = useReactFlow()
 
     const parseCSV = (file: string | ArrayBuffer, filename: string) => {
         if (!file) {

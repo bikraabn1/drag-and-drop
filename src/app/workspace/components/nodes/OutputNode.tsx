@@ -1,28 +1,32 @@
 'use client'
 
-import { CarryOutOutlined, DownloadOutlined, FileExcelFilled, SettingOutlined, TableOutlined, UploadOutlined } from '@ant-design/icons'
-import { Handle, NodeProps, Position } from '@xyflow/react'
-import { Button, Card, Divider, Drawer, Flex, Select, Upload } from 'antd'
+import { CarryOutOutlined, DownloadOutlined } from '@ant-design/icons'
+import { Handle, NodeProps, Position, useEdges, useNodesData } from '@xyflow/react'
+import { Button, Card, Divider, Flex } from 'antd'
 import Paragraph from 'antd/es/typography/Paragraph'
-import React, { useState } from 'react'
-import { bodyNodeStyle, cardStyle, drawerButtonStyle, headerIconNodeStyle, headerNodeStyle, headerTitleNodeStyle, targetHandleStyle } from './node-styles/node-style'
-import ReactJson from 'react-json-view'
+import React, { useEffect, useMemo, useState } from 'react'
+import { bodyNodeStyle, cardStyle, headerIconNodeStyle, headerNodeStyle, headerTitleNodeStyle, targetHandleStyle } from './node-styles/node-style'
+import dynamic from 'next/dynamic'
+const ReactJson = dynamic(() => import('react-json-view'), {
+    ssr: false
+});
 
-const OutputNode = ({ data }: NodeProps) => {
-    const [open, setOpen] = useState(false);
+const OutputNode = ({ id }: NodeProps) => {
+    const allEdges = useEdges()
+    const sourceNodeIds = useMemo(() => {
+        const ids = allEdges
+            .filter((edges) => edges.target === id)
+            .map((edge) => edge.source)
 
-    const showDrawer = () => {
-        setOpen(true);
-    };
+        return ids
+    }, [id, allEdges])
 
-    const onClose = () => {
-        setOpen(false);
-    };
+    const sourceNodeData = useNodesData(sourceNodeIds)
 
-    const handleChange = (value: any) => {
-        console.log(value);
-    }
-
+    useEffect(() => {
+        console.log('ini data yang di terima di outputNode',sourceNodeData)
+    },[sourceNodeData])
+    
     const testJson = {
         "key": "value",
     }
@@ -35,10 +39,11 @@ const OutputNode = ({ data }: NodeProps) => {
                     <Paragraph style={headerTitleNodeStyle}>File Output</Paragraph>
                 </Flex>
                 <Divider style={{ margin: 0 }} />
-                <Flex align='center' justify='center' style={bodyNodeStyle}>
-                    <Card title={"Preview JSON"} style={{padding:5}} size='small'>
-                        <ReactJson src={testJson}/>
+                <Flex align='flex-end' gap={10} justify='center' vertical style={bodyNodeStyle}>
+                    <Card title={"Preview JSON"} style={{ padding: 5 }} size='small'>
+                        <ReactJson style={{ fontSize: "12px" }} src={testJson} />
                     </Card>
+                    <Button icon={<DownloadOutlined />}>Download</Button>
                 </Flex>
                 <Handle type='target' style={targetHandleStyle} position={Position.Left} />
             </Card >
